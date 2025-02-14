@@ -11,8 +11,9 @@ export default function Logout() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // After logging out, navigate to your desired route (e.g., login page)
-      navigate('/login/customer'); // or a common landing page
+      console.log("User signed out successfully");
+      // Optionally, check the auth state (using useAuthState in a parent component)
+      navigate('/login/customer');
     } catch (error) {
       console.error("Error signing out:", error);
     }
