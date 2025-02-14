@@ -23,6 +23,10 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 
+// Import Firestore functions from Firebase
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig'; // Adjust the path as needed
+
 export default function TicketForm() {
   // State for each field
   const [title, setTitle] = useState('');
@@ -45,11 +49,12 @@ export default function TicketForm() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Construct form data (basic example)
-    const formData = {
+    console.log("Form submitted!");
+    // Construct form data (without the file attachment for now)
+    const ticketData = {
       title,
       description,
       priority,
@@ -58,15 +63,21 @@ export default function TicketForm() {
       phone,
       ticketDate,
       agreedToTerms,
-      attachment,
       severity,
       subscribe,
+      createdAt: new Date() // Add a timestamp
+      // If you handle attachments, you might store a file URL here
     };
-
-    // For now, just log the data
-    console.log('Submitted Data:', formData);
-
-    // TODO: Send `formData` to your backend or API
+    console.log("Ticket data to be sent:", ticketData);
+    try {
+     
+      // Add a new document in the "tickets" collection
+      const docRef = await addDoc(collection(db, "tickets"), ticketData);
+      console.log("Ticket written with ID: ", docRef.id);
+      // Optionally clear the form or show a success message
+    } catch (error) {
+      console.error("Error adding ticket: ", error);
+    }
   };
 
   return (
