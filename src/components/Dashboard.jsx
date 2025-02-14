@@ -15,17 +15,16 @@ import {
   DialogActions,
   Button,
   Typography,
-  Divider,
   Box
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getFirestore, collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import AutorenewIcon from '@mui/icons-material/Autorenew'; // For toggling status
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'; // For toggling assignment
+import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-// import { useAuthState } from 'react-firebase-hooks/auth';
 import { useAuthState } from "react-firebase-hooks/auth";
-
 import { auth } from '../firebaseConfig';
 
 const db = getFirestore();
@@ -37,7 +36,7 @@ const priorityColorMapping = {
   high: 'error'
 };
 
-export default function Dashboard() {
+export default function Dashboard({ isAgentDashboard = false }) {
   const [tickets, setTickets] = useState([]);
   const [viewTicket, setViewTicket] = useState(null);
   const navigate = useNavigate();
@@ -47,17 +46,25 @@ export default function Dashboard() {
     async function fetchTickets() {
       try {
         const querySnapshot = await getDocs(collection(db, "tickets"));
-        const ticketsArray = querySnapshot.docs.map((doc) => ({
+        let ticketsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
         }));
+
+        // For customer dashboard, filter tickets by the current user's email.
+        if (!isAgentDashboard && user) {
+          ticketsArray = ticketsArray.filter(ticket => ticket.contactEmail === user.email);
+        }
+
         setTickets(ticketsArray);
       } catch (error) {
         console.error("Error fetching tickets: ", error);
       }
     }
-    fetchTickets();
-  }, []);
+    if (user) {
+      fetchTickets();
+    }
+  }, [user, isAgentDashboard]);
 
   const handleView = (ticket) => {
     // Open modal with ticket details
@@ -74,11 +81,44 @@ export default function Dashboard() {
       try {
         await deleteDoc(doc(db, "tickets", ticket.id));
         console.log("Ticket deleted:", ticket.id);
-        // Update local state to remove the deleted ticket
         setTickets(prevTickets => prevTickets.filter(t => t.id !== ticket.id));
       } catch (error) {
         console.error("Error deleting ticket: ", error);
       }
+    }
+  };
+
+  // Toggle status between "Open" and "Closed"
+  const handleToggleStatus = async (ticket) => {
+    const newStatus = ticket.status === "Closed" ? "Open" : "Closed";
+    try {
+      await updateDoc(doc(db, "tickets", ticket.id), { status: newStatus });
+      setTickets(prevTickets =>
+        prevTickets.map(t =>
+          t.id === ticket.id ? { ...t, status: newStatus } : t
+        )
+      );
+    } catch (error) {
+      console.error("Error updating ticket status: ", error);
+    }
+  };
+
+  // Toggle assignment between current agent's email and "Unassigned"
+  const handleToggleAssignment = async (ticket) => {
+    if (!user) return;
+    const newAssignedTo =
+      ticket.assignedTo && ticket.assignedTo !== "Unassigned"
+        ? "Unassigned"
+        : user.email;
+    try {
+      await updateDoc(doc(db, "tickets", ticket.id), { assignedTo: newAssignedTo });
+      setTickets(prevTickets =>
+        prevTickets.map(t =>
+          t.id === ticket.id ? { ...t, assignedTo: newAssignedTo } : t
+        )
+      );
+    } catch (error) {
+      console.error("Error updating ticket assignment: ", error);
     }
   };
 
@@ -148,8 +188,18 @@ export default function Dashboard() {
                   <IconButton onClick={() => handleView(ticket)} color="primary">
                     <VisibilityIcon />
                   </IconButton>
-                  {/* Only show Edit & Delete if the current user is the owner */}
-                  {user && ticket.contactEmail === user.email && (
+                  {isAgentDashboard && (
+                    <>
+                      <IconButton onClick={() => handleToggleStatus(ticket)} color="primary">
+                        <AutorenewIcon />
+                      </IconButton>
+                      <IconButton onClick={() => handleToggleAssignment(ticket)} color="primary">
+                        <AssignmentIndIcon />
+                      </IconButton>
+                    </>
+                  )}
+                  {/* For customers, show Edit & Delete if they own the ticket */}
+                  {user && ticket.contactEmail === user.email && !isAgentDashboard && (
                     <>
                       <IconButton onClick={() => handleEdit(ticket)} color="secondary">
                         <EditIcon />

@@ -16,13 +16,13 @@ import {
 // 1. Import the necessary Firebase functions
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 export default function CustomerLogin() {
   // Local state for email, password, errors, etc.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
+const navigate = useNavigate(); // Initialize navigate
   // 2. Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +35,7 @@ export default function CustomerLogin() {
       const user = userCredential.user;
       console.log('Customer logged in:', user);
       // TODO: Redirect to a customer dashboard or wherever you need
+      navigate('/')
     } catch (error) {
       // Handle login errors
       console.error('Login error:', error);

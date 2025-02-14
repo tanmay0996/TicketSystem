@@ -17,6 +17,8 @@ function App() {
         <Routes>
           {/* Example default route */}
           <Route path="/" element={<Dashboard />} />
+          <Route path="/agent-dashboard" element={<Dashboard isAgentDashboard={true} />} />
+
           <Route path="/editTicket/:id" element={<EditTicket />} />
           <Route path="/ticket/:id" element={<TicketView />} />
           

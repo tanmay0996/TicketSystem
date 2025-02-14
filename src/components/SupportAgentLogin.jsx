@@ -1,4 +1,3 @@
-// SupportAgentLogin.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -13,12 +12,14 @@ import {
   DialogContent
 } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { auth } from '../firebaseConfig';
 
 export default function SupportAgentLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +29,8 @@ export default function SupportAgentLogin() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Support Agent logged in:', user);
-      // TODO: Redirect to a support agent dashboard or wherever you need
+      // Redirect to /agent-dashboard after successful login
+      navigate('/agent-dashboard');
     } catch (error) {
       console.error('Login error:', error);
       setErrorMsg(error.message);
