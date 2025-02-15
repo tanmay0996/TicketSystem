@@ -17,20 +17,15 @@ import {
   InputAdornment,
   Snackbar,
   Alert,
-  Box as MuiBox
 } from '@mui/material';
 
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 
 // Import Firestore functions
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Adjust the path as needed
-
-// Import Firebase Storage functions
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function TicketForm() {
   // State for each field
@@ -42,7 +37,6 @@ export default function TicketForm() {
   const [phone, setPhone] = useState('');
   const [ticketDate, setTicketDate] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [attachment, setAttachment] = useState(null);
 
   // Example: Additional fields
   const [severity, setSeverity] = useState('1'); // Could be 1, 2, 3, etc.
@@ -50,12 +44,6 @@ export default function TicketForm() {
 
   // Snackbar state
   const [openSnackbar, setOpenSnackbar] = useState(false);
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setAttachment(e.target.files[0]);
-    }
-  };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -67,7 +55,7 @@ export default function TicketForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form submitted!");
-    
+
     // Construct the base ticket data
     const ticketData = {
       title,
@@ -80,29 +68,16 @@ export default function TicketForm() {
       agreedToTerms,
       severity,
       subscribe,
-      createdAt: new Date() // Add a timestamp
-      // Attachment URL will be added below if applicable
+      createdAt: new Date(), // Add a timestamp
     };
 
     try {
-      // If an attachment exists, upload it to Firebase Storage
-      if (attachment) {
-        const storage = getStorage();
-        const fileName = `${Date.now()}_${attachment.name}`;
-        const storageRef = ref(storage, `attachments/${fileName}`);
-        const snapshot = await uploadBytes(storageRef, attachment);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        // Add the download URL to the ticket data
-        ticketData.attachmentURL = downloadURL;
-      }
-      
       // Add the ticket data to Firestore
       const docRef = await addDoc(collection(db, "tickets"), ticketData);
       console.log("Ticket written with ID: ", docRef.id);
-      
-      // Optionally, clear the form or show a success message
+
+      // Show a success message and clear the form
       setOpenSnackbar(true);
-      // Clear the form (optional)
       setTitle('');
       setDescription('');
       setPriority('medium');
@@ -111,7 +86,6 @@ export default function TicketForm() {
       setPhone('');
       setTicketDate('');
       setAgreedToTerms(false);
-      setAttachment(null);
       setSeverity('1');
       setSubscribe(false);
     } catch (error) {
@@ -266,23 +240,6 @@ export default function TicketForm() {
             <FormControlLabel value="4" control={<Radio />} label="4 (Highest)" />
           </RadioGroup>
         </FormControl>
-
-        {/* File Upload */}
-        <Box mt={2}>
-          <Button
-            variant="outlined"
-            component="label"
-            startIcon={<AttachFileIcon />}
-          >
-            Upload Attachment
-            <input type="file" hidden onChange={handleFileChange} />
-          </Button>
-          {attachment && (
-            <Typography variant="body2" mt={1}>
-              Selected File: {attachment.name}
-            </Typography>
-          )}
-        </Box>
 
         {/* Subscribe to Updates Checkbox */}
         <FormControlLabel
