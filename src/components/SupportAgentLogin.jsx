@@ -11,11 +11,17 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
-  Alert
+  Alert,
+  IconButton
 } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
+
+// Import social icons
+import { FaGoogle } from 'react-icons/fa';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 export default function SupportAgentLogin() {
   const [email, setEmail] = useState('');
@@ -46,9 +52,25 @@ export default function SupportAgentLogin() {
     }
   };
 
-  const handleCloseSnackbar = (event, reason) => {
+  const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSuccessOpen(false);
+  };
+
+  // Placeholder functions for social logins
+  const handleGoogleLogin = () => {
+    console.log('Google login clicked');
+    // Implement Google login logic here
+  };
+
+  const handleFacebookLogin = () => {
+    console.log('Facebook login clicked');
+    // Implement Facebook login logic here
+  };
+
+  const handleGithubLogin = () => {
+    console.log('GitHub login clicked');
+    // Implement GitHub login logic here
   };
 
   return (
@@ -122,19 +144,31 @@ export default function SupportAgentLogin() {
 
         <Divider sx={{ my: 2 }}>or</Divider>
 
-        <Typography variant="body2" align="center">
+        {/* <Typography variant="body2" align="center">
           Login with Google, Facebook, etc. (optional)
-        </Typography>
+        </Typography> */}
+
+        <Box display="flex" justifyContent="center" gap={2} sx={{ mt: 2 }}>
+          <IconButton aria-label="Login with Google" onClick={handleGoogleLogin}>
+            <FaGoogle size={32} />
+          </IconButton>
+          <IconButton aria-label="Login with Facebook" onClick={handleFacebookLogin}>
+            <FacebookIcon fontSize="large" />
+          </IconButton>
+          <IconButton aria-label="Login with GitHub" onClick={handleGithubLogin}>
+            <GitHubIcon fontSize="large" />
+          </IconButton>
+        </Box>
       </DialogContent>
 
       {/* Snackbar for successful login notification */}
       <Snackbar
         open={successOpen}
         autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
+        onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
           Login successful!
         </Alert>
       </Snackbar>

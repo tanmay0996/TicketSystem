@@ -11,11 +11,18 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
-  Alert
+  Alert,
+  IconButton
 } from '@mui/material';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+
+// Material UI icons
+import FacebookIcon from '@mui/icons-material/Facebook';
+import GitHubIcon from '@mui/icons-material/GitHub';
+// react-icons for Google icon
+import { FaGoogle } from 'react-icons/fa';
 
 export default function SupportAgentSignup() {
   const [email, setEmail] = useState('');
@@ -38,15 +45,15 @@ export default function SupportAgentSignup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Support Agent signed up:', user);
-      
+
       // Show the success notification
       setSuccessOpen(true);
-      
+
       // Optionally, reset the form fields
       setEmail('');
       setPassword('');
       setConfirmPassword('');
-      
+
       // Redirect to the agent dashboard after a short delay
       setTimeout(() => {
         navigate('/agent-dashboard');
@@ -60,6 +67,22 @@ export default function SupportAgentSignup() {
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') return;
     setSuccessOpen(false);
+  };
+
+  // Placeholder functions for social signups
+  const handleGoogleSignup = () => {
+    console.log('Google signup clicked');
+    // Implement Google signup logic here
+  };
+
+  const handleFacebookSignup = () => {
+    console.log('Facebook signup clicked');
+    // Implement Facebook signup logic here
+  };
+
+  const handleGithubSignup = () => {
+    console.log('GitHub signup clicked');
+    // Implement GitHub signup logic here
   };
 
   return (
@@ -131,11 +154,19 @@ export default function SupportAgentSignup() {
           </Typography>
         </Box>
 
-        <Divider sx={{ my: 2 }}>or</Divider>
+        <Divider sx={{ my: 2 }} />
 
-        <Typography variant="body2" align="center">
-          Sign up with Google, Facebook, etc. (optional)
-        </Typography>
+        <Box display="flex" justifyContent="center" gap={2}>
+          <IconButton aria-label="Sign up with Google" onClick={handleGoogleSignup}>
+            <FaGoogle size={32} />
+          </IconButton>
+          <IconButton aria-label="Sign up with Facebook" onClick={handleFacebookSignup}>
+            <FacebookIcon fontSize="large" />
+          </IconButton>
+          <IconButton aria-label="Sign up with GitHub" onClick={handleGithubSignup}>
+            <GitHubIcon fontSize="large" />
+          </IconButton>
+        </Box>
       </DialogContent>
 
       {/* Snackbar for successful signup notification */}

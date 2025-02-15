@@ -1,4 +1,3 @@
-// CustomerLogin.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -12,11 +11,18 @@ import {
   DialogTitle,
   DialogContent,
   Snackbar,
-  Alert
+  Alert,
+  IconButton
 } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+
+// Material UI icons for Facebook and GitHub
+import FacebookIcon from '@mui/icons-material/Facebook';
+import GitHubIcon from '@mui/icons-material/GitHub';
+// react-icons for Google icon
+import { FaGoogle } from 'react-icons/fa';
 
 export default function CustomerLogin() {
   // Local state for email, password, errors, etc.
@@ -51,6 +57,22 @@ export default function CustomerLogin() {
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setOpenSnackbar(false);
+  };
+
+  // Placeholder functions for social logins
+  const handleGoogleLogin = () => {
+    console.log('Google login clicked');
+    // Implement Google login logic here
+  };
+
+  const handleFacebookLogin = () => {
+    console.log('Facebook login clicked');
+    // Implement Facebook login logic here
+  };
+
+  const handleGithubLogin = () => {
+    console.log('GitHub login clicked');
+    // Implement GitHub login logic here
   };
 
   return (
@@ -129,9 +151,21 @@ export default function CustomerLogin() {
 
         <Divider sx={{ my: 2 }}>or</Divider>
 
-        <Typography variant="body2" align="center">
+        {/* <Typography variant="body2" align="center">
           Login with Google, Facebook, etc. (optional)
-        </Typography>
+        </Typography> */}
+
+        <Box display="flex" justifyContent="center" gap={2} sx={{ mt: 2 }}>
+          <IconButton aria-label="Login with Google" onClick={handleGoogleLogin}>
+            <FaGoogle size={32} />
+          </IconButton>
+          <IconButton aria-label="Login with Facebook" onClick={handleFacebookLogin}>
+            <FacebookIcon fontSize="large" />
+          </IconButton>
+          <IconButton aria-label="Login with GitHub" onClick={handleGithubLogin}>
+            <GitHubIcon fontSize="large" />
+          </IconButton>
+        </Box>
       </DialogContent>
 
       {/* Snackbar Notification for Successful Login */}
