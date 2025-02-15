@@ -1,4 +1,3 @@
-// TicketForm.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -23,9 +22,12 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 
-// Import Firestore functions from Firebase
+// Import Firestore functions
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Adjust the path as needed
+
+// Import Firebase Storage functions
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function TicketForm() {
   // State for each field
@@ -51,9 +53,9 @@ export default function TicketForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     console.log("Form submitted!");
-    // Construct form data (without the file attachment for now)
+    
+    // Construct the base ticket data
     const ticketData = {
       title,
       description,
@@ -66,15 +68,26 @@ export default function TicketForm() {
       severity,
       subscribe,
       createdAt: new Date() // Add a timestamp
-      // If you handle attachments, you might store a file URL here
+      // We'll add the attachment URL (if available) later
     };
-    console.log("Ticket data to be sent:", ticketData);
+
     try {
-     
-      // Add a new document in the "tickets" collection
+      // If an attachment exists, upload it to Firebase Storage
+      if (attachment) {
+        const storage = getStorage();
+        // Create a unique file name using the current timestamp
+        const fileName = `${Date.now()}_${attachment.name}`;
+        const storageRef = ref(storage, `attachments/${fileName}`);
+        const snapshot = await uploadBytes(storageRef, attachment);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        // Add the download URL to the ticket data
+        ticketData.attachmentURL = downloadURL;
+      }
+      
+      // Add the ticket data (with attachmentURL if applicable) to Firestore
       const docRef = await addDoc(collection(db, "tickets"), ticketData);
       console.log("Ticket written with ID: ", docRef.id);
-      // Optionally clear the form or show a success message
+      // Optionally clear the form or show a success message here
     } catch (error) {
       console.error("Error adding ticket: ", error);
     }
