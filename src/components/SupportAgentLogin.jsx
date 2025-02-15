@@ -9,17 +9,20 @@ import {
   Link,
   Divider,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebaseConfig';
 
 export default function SupportAgentLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const navigate = useNavigate(); // Initialize navigate
+  const [successOpen, setSuccessOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,12 +32,23 @@ export default function SupportAgentLogin() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Support Agent logged in:', user);
-      // Redirect to /agent-dashboard after successful login
-      navigate('/agent-dashboard');
+
+      // Show the success notification
+      setSuccessOpen(true);
+      
+      // Delay navigation so the user can see the notification (e.g., 1.5 seconds)
+      setTimeout(() => {
+        navigate('/agent-dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Login error:', error);
       setErrorMsg(error.message);
     }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSuccessOpen(false);
   };
 
   return (
@@ -112,6 +126,18 @@ export default function SupportAgentLogin() {
           Login with Google, Facebook, etc. (optional)
         </Typography>
       </DialogContent>
+
+      {/* Snackbar for successful login notification */}
+      <Snackbar
+        open={successOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          Login successful!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

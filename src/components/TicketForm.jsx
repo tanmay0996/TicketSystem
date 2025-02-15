@@ -14,7 +14,10 @@ import {
   Checkbox,
   Button,
   InputLabel,
-  InputAdornment
+  InputAdornment,
+  Snackbar,
+  Alert,
+  Box as MuiBox
 } from '@mui/material';
 
 import PersonIcon from '@mui/icons-material/Person';
@@ -45,10 +48,20 @@ export default function TicketForm() {
   const [severity, setSeverity] = useState('1'); // Could be 1, 2, 3, etc.
   const [subscribe, setSubscribe] = useState(false);
 
+  // Snackbar state
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setAttachment(e.target.files[0]);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbar(false);
   };
 
   const handleSubmit = async (e) => {
@@ -68,14 +81,13 @@ export default function TicketForm() {
       severity,
       subscribe,
       createdAt: new Date() // Add a timestamp
-      // We'll add the attachment URL (if available) later
+      // Attachment URL will be added below if applicable
     };
 
     try {
       // If an attachment exists, upload it to Firebase Storage
       if (attachment) {
         const storage = getStorage();
-        // Create a unique file name using the current timestamp
         const fileName = `${Date.now()}_${attachment.name}`;
         const storageRef = ref(storage, `attachments/${fileName}`);
         const snapshot = await uploadBytes(storageRef, attachment);
@@ -84,10 +96,24 @@ export default function TicketForm() {
         ticketData.attachmentURL = downloadURL;
       }
       
-      // Add the ticket data (with attachmentURL if applicable) to Firestore
+      // Add the ticket data to Firestore
       const docRef = await addDoc(collection(db, "tickets"), ticketData);
       console.log("Ticket written with ID: ", docRef.id);
-      // Optionally clear the form or show a success message here
+      
+      // Optionally, clear the form or show a success message
+      setOpenSnackbar(true);
+      // Clear the form (optional)
+      setTitle('');
+      setDescription('');
+      setPriority('medium');
+      setCategory('');
+      setContactEmail('');
+      setPhone('');
+      setTicketDate('');
+      setAgreedToTerms(false);
+      setAttachment(null);
+      setSeverity('1');
+      setSubscribe(false);
     } catch (error) {
       console.error("Error adding ticket: ", error);
     }
@@ -288,6 +314,18 @@ export default function TicketForm() {
           Submit Ticket
         </Button>
       </Box>
+
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          Form submitted successfully!
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }

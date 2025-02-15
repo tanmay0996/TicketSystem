@@ -1,4 +1,3 @@
-// SupportAgentSignup.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -10,16 +9,21 @@ import {
   Link,
   Divider,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 export default function SupportAgentSignup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [successOpen, setSuccessOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,11 +38,28 @@ export default function SupportAgentSignup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Support Agent signed up:', user);
-      // TODO: Optionally, store additional user data (e.g., role: "agent") in Firestore
+      
+      // Show the success notification
+      setSuccessOpen(true);
+      
+      // Optionally, reset the form fields
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      
+      // Redirect to the agent dashboard after a short delay
+      setTimeout(() => {
+        navigate('/agent-dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Signup error:', error);
       setErrorMsg(error.message);
     }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSuccessOpen(false);
   };
 
   return (
@@ -116,6 +137,18 @@ export default function SupportAgentSignup() {
           Sign up with Google, Facebook, etc. (optional)
         </Typography>
       </DialogContent>
+
+      {/* Snackbar for successful signup notification */}
+      <Snackbar
+        open={successOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          Successfully signed up!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

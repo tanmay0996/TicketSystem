@@ -1,4 +1,3 @@
-// CustomerSignup.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -10,16 +9,21 @@ import {
   Link,
   Divider,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 export default function CustomerSignup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,11 +38,28 @@ export default function CustomerSignup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('Customer signed up:', user);
-      // TODO: Optionally, store additional user data (e.g., role: "customer") in Firestore
+      
+      // Show success notification
+      setOpenSnackbar(true);
+      
+      // Optionally, clear the form fields after signup
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      
+      // Navigate to the tickets page after a delay (e.g., 1.5 seconds)
+      setTimeout(() => {
+        navigate('/tickets');
+      }, 1500);
     } catch (error) {
       console.error('Signup error:', error);
       setErrorMsg(error.message);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setOpenSnackbar(false);
   };
 
   return (
@@ -116,6 +137,18 @@ export default function CustomerSignup() {
           Sign up with Google, Facebook, etc. (optional)
         </Typography>
       </DialogContent>
+
+      {/* Snackbar Notification for Successful Signup */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          Signup successful!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

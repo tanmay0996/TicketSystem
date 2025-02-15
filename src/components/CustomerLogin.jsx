@@ -10,37 +10,47 @@ import {
   Link,
   Divider,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Snackbar,
+  Alert
 } from '@mui/material';
-
-// 1. Import the necessary Firebase functions
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
+
 export default function CustomerLogin() {
   // Local state for email, password, errors, etc.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-const navigate = useNavigate(); // Initialize navigate
-  // 2. Handle form submission
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  
+  const navigate = useNavigate();
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
     try {
-      // 3. Use Firebase Auth to sign in
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Signed in successfully
       const user = userCredential.user;
       console.log('Customer logged in:', user);
-      // TODO: Redirect to a customer dashboard or wherever you need
-      navigate('/')
+      // Show success notification
+      setOpenSnackbar(true);
+      // Wait 2 seconds before navigating (so user sees the notification)
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (error) {
-      // Handle login errors
       console.error('Login error:', error);
       setErrorMsg(error.message);
     }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setOpenSnackbar(false);
   };
 
   return (
@@ -123,6 +133,18 @@ const navigate = useNavigate(); // Initialize navigate
           Login with Google, Facebook, etc. (optional)
         </Typography>
       </DialogContent>
+
+      {/* Snackbar Notification for Successful Login */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          Logged in successfully!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
